@@ -17,7 +17,7 @@ import navConfig from './NavConfig';
 import { ReactComponent as metamaskIcon } from '../../coin_icon/METAMASK.svg';
 import { useWeb3Context } from '../../hooks';
 import MenuPopover from "../../components/MenuPopover";
-import Web3 from 'web3';
+
 // ----------------------------------------------------------------------
 
 const DRAWER_WIDTH = 280;
@@ -39,8 +39,8 @@ const AccountStyle = styled('div')(({ theme }) => ({
 
 const AccountStyle2 = styled('div')(({ theme }) => ({
   display: 'flex',
-  alignItems: 'center',
   padding: theme.spacing(2, 2.5),
+  alignItems: 'center',
   color:'black',
 }));
 // ---------------------------------------------------------------------
@@ -49,6 +49,8 @@ DashboardSidebar.propTypes = {
   isOpenSidebar: PropTypes.bool,
   onCloseSidebar: PropTypes.func,
 };
+
+
 
 export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
   const { pathname } = useLocation();
@@ -67,7 +69,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
 
   useEffect(() => {
     if (hasCachedProvider()) {
-      connect()
+      connect();
     }
   }, []);
 

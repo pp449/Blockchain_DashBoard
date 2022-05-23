@@ -1,29 +1,47 @@
-import React, {useState, useContext, useMemo, useCallback} from "react";
+import React, {useState, useContext, useMemo, useCallback, ReactElement} from "react";
 import Web3Modal from "web3modal";
-import { StaticJsonRpcProvider, Web3Provider } from "@ethersproject/providers";
+import { JsonRpcProvider, StaticJsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import WalletConnectProvider from "@walletconnect/web3-provider";
-import { DEFAULT_NETWORK, Networks } from "../../constants";
-import { getMainnetURI } from "./helpers";
+import { DEFAULT_NETWORK, getNetworkNumber, getRpcUrl, NETWORK } from "../../constants";
+import { getMainnetURI, getEthereumURI } from "./helpers";
 
-const Web3Context = React.createContext(null);
+// DEAFULT_NETWORK = 8545, Networks = { CYPRESS: 8545, BAOBAB: 1001 }, getMainnetURI = "https://api.baobab.klaytn.net:8651/"
+
+
+type onChainProvider = {
+    connect: () => Promise<Web3Provider>;
+    disconnect: () => void;
+    provider: any;
+    address: string;
+    connected: Boolean;
+    web3Modal: Web3Modal;
+    providerChainID: number;
+    hasCachedProvider: () => boolean;
+}
+
+export type Web3ContextData = {
+    onChainProvider: onChainProvider;
+} | null;
+
+const Web3Context = React.createContext<Web3ContextData>(null);
 
 export const useWeb3Context = () => {
     const web3Context = useContext(Web3Context);
-    if(!web3Context){
-        throw new Error("useWeb3Context() can be only be used inside of <Web3ContextProvider /> please declare it at a higher level.");
+    if (!web3Context) {
+        throw new Error("useWeb3Context() can only be used inside of <Web3ContextProvider />, please declare it at a higher level.");
     }
     const { onChainProvider } = web3Context;
-    return useMemo(()=> {
-        return {...onChainProvider };
-    },[web3Context]);
+    return useMemo(() => {
+        return { ...onChainProvider };
+    }, [web3Context]);
 };
 
-export const Web3ContextProvider = ({children}) => {
+export const Web3ContextProvider:React.FC<{ children: ReactElement }> = ({children}) => {
     const [connected, setConnected] = useState(false);
     const [address, setAddress] = useState("");
     const [uri, setUri] = useState(getMainnetURI());
-    const [provider, setProvider] = useState(new StaticJsonRpcProvider(uri));
-    const [providerChainID, setProviderChainID] = useState(DEFAULT_NETWORK);
+    const [provider, setProvider] = useState<JsonRpcProvider>(new StaticJsonRpcProvider(uri));
+    const [providerChainID, setProviderChainID] = useState(NETWORK.CYPRESS);
 
     const [web3Modal] = useState(
         new Web3Modal({
@@ -33,7 +51,7 @@ export const Web3ContextProvider = ({children}) => {
                     package: WalletConnectProvider,
                     options: {
                         rpc: {
-                            [Networks.KLAY]: getMainnetURI(),
+                            [NETWORK.CYPRESS]: getRpcUrl(providerChainID),
                         },
                     },
                 },
@@ -41,25 +59,25 @@ export const Web3ContextProvider = ({children}) => {
         }),
     );
 
-    const hasCachedProvider = () => {
+    const hasCachedProvider = (): boolean => {
         if (!web3Modal) return false;
         if (!web3Modal.cachedProvider) return false;
         return true;
     }
 
     const _initListeners = useCallback(
-        (rawProvider) => {
+        (rawProvider: JsonRpcProvider) => {
             if(!rawProvider.on){
                 return;
             }
 
             rawProvider.on("accountsChanged", () => setTimeout(()=> window.location.reload(),1));
 
-            rawProvider.on("chainchanged", async (chain) => {
+            rawProvider.on("chainchanged", async (chain:number) => {
                 changeNetwork(chain);
             });
 
-            rawProvider.on("network", (_newNetwork, oldNetwork) => {
+            rawProvider.on("network", (_newNetwork: any, oldNetwork: any) => {
                 if (!oldNetwork) return;
                 window.location.reload();
             });
@@ -67,7 +85,7 @@ export const Web3ContextProvider = ({children}) => {
         [provider],
     );
 
-    const changeNetwork = async(otherChainID) => {
+    const changeNetwork = async(otherChainID: number) => {
         const network = Number(otherChainID);
 
         setProviderChainID(network);
@@ -87,7 +105,7 @@ export const Web3ContextProvider = ({children}) => {
 
         setProviderChainID(chainId);
 
-        if(chainId === Networks.KLAY){
+        if(chainId === getNetworkNumber(providerChainID)){
             setProvider(connectedProvider);
         }
         setConnected(true);

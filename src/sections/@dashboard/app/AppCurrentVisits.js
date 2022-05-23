@@ -42,9 +42,9 @@ AppCurrentVisits.propTypes = {
 export default function AppCurrentVisits({ title, subheader, chartColors, chartData, ...other }) {
   const theme = useTheme();
 
-  const chartLabels = chartData.map((i) => i.label);
+  const chartLabels = chartData.map((i) => i.contract_ticker_symbol);
 
-  const chartSeries = chartData.map((i) => i.value);
+  const chartSeries = chartData.map((i) => (i.balance/(10**i.contract_decimals)));
 
   const chartOptions = merge(BaseOptionChart(), {
     colors: chartColors,

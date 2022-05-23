@@ -1,4 +1,5 @@
-import { faker } from '@faker-js/faker';
+import { useState, useEffect } from 'react';
+import axios from "axios";
 // @mui
 import { useTheme } from '@mui/material/styles';
 import { Grid, Container, Typography } from '@mui/material';
@@ -16,7 +17,10 @@ import {
   AppWidgetSummary,
   AppCurrentSubject,
   AppConversionRates,
+  AppAmount,
 } from '../sections/@dashboard/app';
+import { tokens } from '../constants';
+import { getBalanceABI } from '../abi';
 import { ReactComponent as DAI } from '../coin_icon/DAI.svg';
 import { ReactComponent as KDAI } from '../coin_icon/KDAI.svg';
 import { ReactComponent as KETH } from '../coin_icon/KETH.svg';
@@ -29,7 +33,73 @@ import { ReactComponent as KXRP } from '../coin_icon/KXRP.svg';
 
 // ----------------------------------------------------------------------
 
+const mockAddress = "0x1938A448d105D26c40A52a1Bfe99B8Ca7a745aD0";   // etherscan mock address
+const mockAddress2 = "0xa312373faa18649689959cb5b8a2be95d63452bf";  // klaytnscope mock address
+
 export default function DashboardApp() {
+  const [tokenBalances, setTokenBalances] = useState([]);
+
+  const arr = [];
+  useEffect(()=> {
+    // getBalanceOfToken();
+    getTokenInformation();
+  },[]) 
+
+  const getTokenInformation = () => {
+    axios({
+      method: 'get',
+      url: `https://api.covalenthq.com/v1/1/address/${mockAddress}/balances_v2/?quote-currency=USD&format=JSON&nft=false&no-nft-fetch=false&key=ckey_2e63764c1c1047eb852e6342bc4`
+    })
+    .then((response) => {
+      response.data.data.items.map((item) => {
+        if(item.balance !== "0" && item.contract_name !== null){
+          item.balance *= 1;
+          arr.push(item);
+        }
+        return 0;
+      })
+      setTokenBalances(arr);
+    })
+  }
+
+  // const getBalanceOfToken = async() => {
+  //   // eslint-disable-next-line no-restricted-syntax
+  //   for (const [key, token] of Object.entries(tokens)) {
+  //     let tmp;
+  //     token.balanceOf(mockAddress)
+  //     .then(res=> {
+  //       arr.push(res);
+  //     }).catch(err => {
+  //       console.log(err);
+  //     })
+  //   }
+  //   Promise.all(arr);
+  //   console.log("arr: ", arr);
+  //   // if(result!=='0'){
+  //   //   console.log(token.name);
+  //   //   const newExistToken = {
+  //   //     "tokenName": token.name,
+  //   //     result,
+  //   //   };
+  //   //   arr.push(newExistToken)
+  //     // setTokenBalances(arr);
+  //   // }
+  // }
+
+  const getCoinchartHours = () => {
+    const today = new Date();
+    const hours = today.getHours();
+    const arr=[];
+    for(let i=hours-10;i<=hours; i+=1){
+      let j = i;
+      if(j<1){
+        j = 24-j;
+      }
+      arr.push(j);
+    }
+    return arr;
+  }
+
   const theme = useTheme();
 
   return (
@@ -40,23 +110,17 @@ export default function DashboardApp() {
         </Typography>
 
         <Grid container spacing={3}>
+          <Grid item xs={12} md={6} lg={4}>
+            <AppAmount 
+              title="보유 잔액"
+            />
+          </Grid>
+          
           <Grid item xs={12} md={6} lg={8}>
             <AppWebsiteVisits
-              title="코인가격 추이"
+              title="코인 대출가격 추이"
               subheader="(+31%) than last year"
-              chartLabels={[
-                '07/01/2021',
-                '08/01/2021',
-                '09/01/2021',
-                '10/01/2021',
-                '11/01/2021',
-                '12/01/2021',
-                '1/01/2022',
-                '2/01/2022',
-                '3/01/2022',
-                '4/01/2022',
-                '5/01/2022',
-              ]}
+              chartLabels={getCoinchartHours()}
               chartData={[
                 {
                   name: 'DAI',
@@ -79,16 +143,11 @@ export default function DashboardApp() {
               ]}
             />
           </Grid>
-
+          {console.log(tokenBalances)}
           <Grid item xs={12} md={6} lg={4}>
             <AppCurrentVisits
               title="코인 보유량"
-              chartData={[
-                { label: 'XRP', value: 4344 },
-                { label: 'DAI', value: 5435 },
-                { label: 'AVAX', value: 4443 },
-                { label: '기타', value: 1443 },
-              ]}
+              chartData={tokenBalances}
               chartColors={[
                 theme.palette.primary.main,
                 theme.palette.chart.blue[0],
@@ -100,97 +159,12 @@ export default function DashboardApp() {
 
           <Grid item xs={12} md={6} lg={8}>
             <AppConversionRates
-              title="급상승한 코인"
+              title="코인잔액"
               chartData={[
                 { label: '트론', value: 31 },
                 { label: '알고랜드', value: 20 },
                 { label: '1인치네트워크', value: 14 },
                 { label: '저스트', value: 10 },
-              ]}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6} lg={4}>
-            <AppCurrentSubject
-              title="Current Subject"
-              chartLabels={['English', 'History', 'Physics', 'Geography', 'Chinese', 'Math']}
-              chartData={[
-                { name: 'Series 1', data: [80, 50, 30, 40, 100, 20] },
-                { name: 'Series 2', data: [20, 30, 40, 80, 20, 80] },
-                { name: 'Series 3', data: [44, 76, 78, 13, 43, 10] },
-              ]}
-              chartColors={[...Array(6)].map(() => theme.palette.text.secondary)}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6} lg={8}>
-            <AppNewsUpdate
-              title="News Update"
-              list={[...Array(5)].map((_, index) => ({
-                id: faker.datatype.uuid(),
-                title: faker.name.jobTitle(),
-                description: faker.name.jobTitle(),
-                image: `/static/mock-images/covers/cover_${index + 1}.jpg`,
-                postedAt: faker.date.recent(),
-              }))}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6} lg={4}>
-            <AppOrderTimeline
-              title="Order Timeline"
-              list={[...Array(5)].map((_, index) => ({
-                id: faker.datatype.uuid(),
-                title: [
-                  '1983, orders, $4220',
-                  '12 Invoices have been paid',
-                  'Order #37745 from September',
-                  'New order placed #XF-2356',
-                  'New order placed #XF-2346',
-                ][index],
-                type: `order${index + 1}`,
-                time: faker.date.past(),
-              }))}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6} lg={4}>
-            <AppTrafficBySite
-              title="Traffic by Site"
-              list={[
-                {
-                  name: 'FaceBook',
-                  value: 323234,
-                  icon: <Iconify icon={'eva:facebook-fill'} color="#1877F2" width={32} height={32} />,
-                },
-                {
-                  name: 'Google',
-                  value: 341212,
-                  icon: <Iconify icon={'eva:google-fill'} color="#DF3E30" width={32} height={32} />,
-                },
-                {
-                  name: 'Linkedin',
-                  value: 411213,
-                  icon: <Iconify icon={'eva:linkedin-fill'} color="#006097" width={32} height={32} />,
-                },
-                {
-                  name: 'Twitter',
-                  value: 443232,
-                  icon: <Iconify icon={'eva:twitter-fill'} color="#1C9CEA" width={32} height={32} />,
-                },
-              ]}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6} lg={8}>
-            <AppTasks
-              title="Tasks"
-              list={[
-                { id: '1', label: 'Create FireStone Logo' },
-                { id: '2', label: 'Add SCSS and JS files if required' },
-                { id: '3', label: 'Stakeholder Meeting' },
-                { id: '4', label: 'Scoping & Estimations' },
-                { id: '5', label: 'Sprint Showcase' },
               ]}
             />
           </Grid>

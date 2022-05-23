@@ -15,7 +15,18 @@
     "react-hooks",
     "prettier"
   ],
-  "parser": "@babel/eslint-parser",
+  "settings": {
+    "import/extensions": [".js",".jsx",".ts",".tsx"],
+    "import/parsers": {
+        "@typescript-eslint/parser": [".ts",".tsx"]
+    },
+    "import/resolver": {
+        "node": {
+            "extensions": [".js",".jsx",".ts",".tsx"]
+        }
+    }
+},
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": 8,
     "requireConfigFile": false,
@@ -25,6 +36,16 @@
     }
   },
   "rules": {
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "jsx": "never",
+        "ts": "never",
+        "tsx": "never"
+      }
+   ],
     "no-shadow": 0,
     "no-console": 0,
     "react/jsx-key": 1,
