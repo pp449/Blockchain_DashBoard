@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from "axios";
+import axios from 'axios';
 // @mui
 import { useTheme } from '@mui/material/styles';
 import { Grid, Container, Typography } from '@mui/material';
@@ -33,72 +33,97 @@ import { ReactComponent as KXRP } from '../coin_icon/KXRP.svg';
 
 // ----------------------------------------------------------------------
 
-const mockAddress = "0x1938A448d105D26c40A52a1Bfe99B8Ca7a745aD0";   // etherscan mock address
-const mockAddress2 = "0xa312373faa18649689959cb5b8a2be95d63452bf";  // klaytnscope mock address
+const mockAddress = '0x1938A448d105D26c40A52a1Bfe99B8Ca7a745aD0'; // etherscan mock address
+const mockAddress2 = '0xEA674fdDe714fd979de3EdF0F56AA9716B898ec8'; // klaytnscope mock address
 
 export default function DashboardApp() {
+  const [amount, setAmount] = useState("");
   const [tokenBalances, setTokenBalances] = useState([]);
+  const [slicedToken, setSlicedToken] = useState([]);
 
-  const arr = [];
-  useEffect(()=> {
-    // getBalanceOfToken();
-    getTokenInformation();
-  },[]) 
+  useEffect(() => {
+    getBalances();
+  }, []);
 
-  const getTokenInformation = () => {
-    axios({
+  const getTokenInfo = async (token) => {
+    const result = {
+      symbol: "",
+      balance: 0,
+      price: 0
+    };
+
+    if (token.balance !== '0' && token.contract_name !== null) {
+      try {
+        const response = await axios({
+          method: 'get',
+          url: `https://api.covalenthq.com/v1/pricing/historical/USD/${token.contract_ticker_symbol}/?quote-currency=USD&format=JSON&key=ckey_2e63764c1c1047eb852e6342bc4`,
+        });
+  
+        result.symbol = token.contract_ticker_symbol;
+        result.balance = token.balance / 10 ** token.contract_decimals;
+        result.price = result.balance * response.data.data.prices[0].price;
+      } catch(e) {
+        console.log("scam");
+      }
+    }    
+    return result;
+  };
+
+  const getBalances = async () => {
+    const balance = await axios({
       method: 'get',
-      url: `https://api.covalenthq.com/v1/1/address/${mockAddress}/balances_v2/?quote-currency=USD&format=JSON&nft=false&no-nft-fetch=false&key=ckey_2e63764c1c1047eb852e6342bc4`
-    })
-    .then((response) => {
-      response.data.data.items.map((item) => {
-        if(item.balance !== "0" && item.contract_name !== null){
-          item.balance *= 1;
-          arr.push(item);
-        }
-        return 0;
-      })
-      setTokenBalances(arr);
-    })
-  }
+      url: `https://api.covalenthq.com/v1/1/address/${mockAddress}/balances_v2/?quote-currency=USD&format=JSON&nft=false&no-nft-fetch=false&key=ckey_2e63764c1c1047eb852e6342bc4`,
+    });
 
-  // const getBalanceOfToken = async() => {
-  //   // eslint-disable-next-line no-restricted-syntax
-  //   for (const [key, token] of Object.entries(tokens)) {
-  //     let tmp;
-  //     token.balanceOf(mockAddress)
-  //     .then(res=> {
-  //       arr.push(res);
-  //     }).catch(err => {
-  //       console.log(err);
-  //     })
-  //   }
-  //   Promise.all(arr);
-  //   console.log("arr: ", arr);
-  //   // if(result!=='0'){
-  //   //   console.log(token.name);
-  //   //   const newExistToken = {
-  //   //     "tokenName": token.name,
-  //   //     result,
-  //   //   };
-  //   //   arr.push(newExistToken)
-  //     // setTokenBalances(arr);
-  //   // }
-  // }
+    console.log(balance);
+    const promises = []; 
+
+    const items = balance.data.data.items;
+
+    console.log(items)
+
+    for(let index = 0; index < items.length; index += 1) {
+      promises.push(getTokenInfo(items[index]));
+    }
+
+    const results = await Promise.all(promises);
+    const tokens = [];
+
+    console.log("results: ", results);
+    for(let index=0; index < results.length; index +=1) {
+      if(results[index].price > 1) {
+        tokens.push(results[index]);
+      }
+    }
+
+    tokens.sort((a, b) => b.balance - a.balance);
+    setSlicedToken(tokens.slice(0,4));
+
+    tokens.sort((a,b) => b.price - a.price);
+    setTokenBalances(tokens);
+
+    let currentTotalPrice = 0;
+
+    tokens.forEach(result => {
+      currentTotalPrice += result.balance;
+    })
+
+    setAmount(Math.floor(currentTotalPrice));
+  };
 
   const getCoinchartHours = () => {
     const today = new Date();
     const hours = today.getHours();
-    const arr=[];
-    for(let i=hours-10;i<=hours; i+=1){
+    const arr = [];
+    for (let i = hours - 10; i <= hours; i += 1) {
       let j = i;
-      if(j<1){
-        j = 24-j;
+      if (j < 1) {
+        j = 24 - j;
       }
       arr.push(j);
     }
     return arr;
-  }
+  };
 
   const theme = useTheme();
 
@@ -108,14 +133,11 @@ export default function DashboardApp() {
         <Typography variant="h4" sx={{ mb: 5 }}>
           코인 포트폴리오
         </Typography>
-
         <Grid container spacing={3}>
           <Grid item xs={12} md={6} lg={4}>
-            <AppAmount 
-              title="보유 잔액"
-            />
+            <AppAmount title="보유 잔액" amount={amount} />
           </Grid>
-          
+
           <Grid item xs={12} md={6} lg={8}>
             <AppWebsiteVisits
               title="코인 대출가격 추이"
@@ -143,11 +165,10 @@ export default function DashboardApp() {
               ]}
             />
           </Grid>
-          {console.log(tokenBalances)}
           <Grid item xs={12} md={6} lg={4}>
             <AppCurrentVisits
               title="코인 보유량"
-              chartData={tokenBalances}
+              chartData={slicedToken}
               chartColors={[
                 theme.palette.primary.main,
                 theme.palette.chart.blue[0],
@@ -156,16 +177,11 @@ export default function DashboardApp() {
               ]}
             />
           </Grid>
-
+              {console.log(tokenBalances)}
           <Grid item xs={12} md={6} lg={8}>
             <AppConversionRates
               title="코인잔액"
-              chartData={[
-                { label: '트론', value: 31 },
-                { label: '알고랜드', value: 20 },
-                { label: '1인치네트워크', value: 14 },
-                { label: '저스트', value: 10 },
-              ]}
+              chartData={tokenBalances}
             />
           </Grid>
         </Grid>

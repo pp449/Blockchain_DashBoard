@@ -2,13 +2,19 @@ import PropTypes from 'prop-types';
 import merge from 'lodash/merge';
 import ReactApexChart from 'react-apexcharts';
 // @mui
-import { Box, Card, CardHeader } from '@mui/material';
+import { Box, Card, CardHeader, createStyles } from '@mui/material';
 // utils
 import { fNumber } from '../../../utils/formatNumber';
 // components
 import { BaseOptionChart } from '../../../components/chart';
+import Scrollbar from '../../../components/Scrollbar';
 
 // ----------------------------------------------------------------------
+
+const stdiv = {
+  height: "364px",
+  overflow: "scroll",
+}
 
 AppConversionRates.propTypes = {
   title: PropTypes.string,
@@ -17,9 +23,9 @@ AppConversionRates.propTypes = {
 };
 
 export default function AppConversionRates({ title, subheader, chartData, ...other }) {
-  const chartLabels = chartData.map((i) => i.label);
+  const chartLabels = chartData.map((i) => i.symbol);
 
-  const chartSeries = chartData.map((i) => i.value);
+  const chartSeries = chartData.map((i) => i.price);
 
   const chartOptions = merge(BaseOptionChart(), {
     tooltip: {
@@ -41,11 +47,15 @@ export default function AppConversionRates({ title, subheader, chartData, ...oth
 
   return (
     <Card {...other}>
+      <Scrollbar>
       <CardHeader title={title} subheader={subheader} />
 
       <Box sx={{ mx: 3 }} dir="ltr">
-        <ReactApexChart type="bar" series={[{ data: chartSeries }]} options={chartOptions} height={364} />
+        <div style={stdiv}>
+        <ReactApexChart type="bar" series={[{ data: chartSeries }]} options={chartOptions} height={1000} />
+        </div>
       </Box>
+      </Scrollbar>
     </Card>
   );
 }
