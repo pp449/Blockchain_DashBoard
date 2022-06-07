@@ -52,7 +52,7 @@ export default function AppConversionRates({ title, subheader, chartData, ...oth
 
       <Box sx={{ mx: 3 }} dir="ltr">
         <div style={stdiv}>
-        <ReactApexChart type="bar" series={[{ data: chartSeries }]} options={chartOptions} height={1000} />
+        <ReactApexChart type="bar" series={[{ data: chartSeries }]} options={chartOptions} height={70*chartData.length} />
         </div>
       </Box>
       </Scrollbar>

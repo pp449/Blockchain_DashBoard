@@ -12,19 +12,9 @@ const navConfig = [
     icon: getIcon('eva:pie-chart-2-fill'),
   },
   {
-    title: '유저',
+    title: '대출현황',
     path: '/dashboard/user',
     icon: getIcon('eva:people-fill'),
-  },
-  {
-    title: '상품',
-    path: '/dashboard/products',
-    icon: getIcon('eva:shopping-bag-fill'),
-  },
-  {
-    title: '블로그',
-    path: '/dashboard/blog',
-    icon: getIcon('eva:file-text-fill'),
   },
   {
     title: '로그인',
@@ -35,11 +25,6 @@ const navConfig = [
     title: '회원가입',
     path: '/register',
     icon: getIcon('eva:person-add-fill'),
-  },
-  {
-    title: 'Not found',
-    path: '/404',
-    icon: getIcon('eva:alert-triangle-fill'),
   },
 ];
 

@@ -34,7 +34,7 @@ import { ReactComponent as KXRP } from '../coin_icon/KXRP.svg';
 // ----------------------------------------------------------------------
 
 const mockAddress = '0x1938A448d105D26c40A52a1Bfe99B8Ca7a745aD0'; // etherscan mock address
-const mockAddress2 = '0xEA674fdDe714fd979de3EdF0F56AA9716B898ec8'; // klaytnscope mock address
+const mockAddress2 = '0x3436100674492BCe353C6709ec11DEd32b1A797a'; // klaytnscope mock address
 
 export default function DashboardApp() {
   const [amount, setAmount] = useState("");
@@ -54,14 +54,20 @@ export default function DashboardApp() {
 
     if (token.balance !== '0' && token.contract_name !== null) {
       try {
-        const response = await axios({
+        const response1 = await axios({
           method: 'get',
-          url: `https://api.covalenthq.com/v1/pricing/historical/USD/${token.contract_ticker_symbol}/?quote-currency=USD&format=JSON&key=ckey_2e63764c1c1047eb852e6342bc4`,
+          url: `https://api.covalenthq.com/v1/pricing/historical_by_addresses_v2/1/USD/${token.contract_address}/?&key=ckey_2e63764c1c1047eb852e6342bc4`
         });
-  
+        const response2 = await axios({
+          method: 'get',
+          url: `https://api.covalenthq.com/v1/pricing/historical/USD/${token.contract_ticker_symbol}/?quote-currency=USD&format=JSON&key=ckey_2e63764c1c1047eb852e6342bc4`
+        })
+        const bal = response1.data.data[0].prices[0].price < response2.data.data.prices[0].price ? response1.data.data[0].prices[0].price : response2.data.data.prices[0].price;
         result.symbol = token.contract_ticker_symbol;
+        console.log(result.symbol,": ", bal);
         result.balance = token.balance / 10 ** token.contract_decimals;
-        result.price = result.balance * response.data.data.prices[0].price;
+        result.price = result.balance * bal;
+        // result.price = result.balance * response.data.data.prices[0].price;
       } catch(e) {
         console.log("scam");
       }
@@ -75,12 +81,10 @@ export default function DashboardApp() {
       url: `https://api.covalenthq.com/v1/1/address/${mockAddress}/balances_v2/?quote-currency=USD&format=JSON&nft=false&no-nft-fetch=false&key=ckey_2e63764c1c1047eb852e6342bc4`,
     });
 
-    console.log(balance);
     const promises = []; 
 
     const items = balance.data.data.items;
 
-    console.log(items)
 
     for(let index = 0; index < items.length; index += 1) {
       promises.push(getTokenInfo(items[index]));
@@ -89,7 +93,6 @@ export default function DashboardApp() {
     const results = await Promise.all(promises);
     const tokens = [];
 
-    console.log("results: ", results);
     for(let index=0; index < results.length; index +=1) {
       if(results[index].price > 1) {
         tokens.push(results[index]);
@@ -105,9 +108,8 @@ export default function DashboardApp() {
     let currentTotalPrice = 0;
 
     tokens.forEach(result => {
-      currentTotalPrice += result.balance;
+      currentTotalPrice += result.price;
     })
-
     setAmount(Math.floor(currentTotalPrice));
   };
 
@@ -177,7 +179,6 @@ export default function DashboardApp() {
               ]}
             />
           </Grid>
-              {console.log(tokenBalances)}
           <Grid item xs={12} md={6} lg={8}>
             <AppConversionRates
               title="코인잔액"
