@@ -12,11 +12,6 @@ const navConfig = [
     icon: getIcon('eva:pie-chart-2-fill'),
   },
   {
-    title: '대출현황',
-    path: '/dashboard/user',
-    icon: getIcon('eva:people-fill'),
-  },
-  {
     title: '로그인',
     path: '/login',
     icon: getIcon('eva:lock-fill'),

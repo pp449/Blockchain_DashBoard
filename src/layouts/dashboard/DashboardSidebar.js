@@ -5,7 +5,6 @@ import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import { Box, Link, Button, Drawer, Typography, Avatar, Stack, SvgIcon, TextField, MenuItem } from '@mui/material';
 // mock
-import account from '../../_mock/account';
 // hooks
 import useResponsive from '../../hooks/useResponsive';
 // components
@@ -17,6 +16,7 @@ import navConfig from './NavConfig';
 import { ReactComponent as metamaskIcon } from '../../coin_icon/METAMASK.svg';
 import { useWeb3Context } from '../../hooks';
 import MenuPopover from "../../components/MenuPopover";
+import account from "../../_mock/account";
 
 // ----------------------------------------------------------------------
 
@@ -54,6 +54,7 @@ DashboardSidebar.propTypes = {
 
 export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
   const { pathname } = useLocation();
+  // const { account, setAccount } = useState();
   const [openMetamask,setOpenMetamask] = useState(false);
   const { connect,disconnect,hasCachedProvider, provider, connected, address, web3Modal, providerChainID } = useWeb3Context();
   const anchorRef = useRef(null);
@@ -105,10 +106,9 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
             <Avatar src={account.photoURL} alt="photoURL" />
             <Box sx={{ ml: 2 }}>
               <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
-                {account.displayName}
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                {account.role}
+                {account.displayName ? account.displayName : 
+                <Button variant="text">계정가입을 해주세요</Button>
+                }
               </Typography>
             </Box>
           </AccountStyle>

@@ -22,7 +22,7 @@ AppConversionRates.propTypes = {
   chartData: PropTypes.array.isRequired,
 };
 
-export default function AppConversionRates({ title, subheader, chartData, ...other }) {
+export default function AppConversionRates({ title, subheader, chartData, color, ...other }) {
   const chartLabels = chartData.map((i) => i.symbol);
 
   const chartSeries = chartData.map((i) => i.price);
@@ -43,6 +43,12 @@ export default function AppConversionRates({ title, subheader, chartData, ...oth
     xaxis: {
       categories: chartLabels,
     },
+    fill: {
+      colors: color
+    },
+    stroke: {
+      colors: color
+    }
   });
 
   return (

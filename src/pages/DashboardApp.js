@@ -33,13 +33,33 @@ import { ReactComponent as KXRP } from '../coin_icon/KXRP.svg';
 
 // ----------------------------------------------------------------------
 
-const mockAddress = '0x1938A448d105D26c40A52a1Bfe99B8Ca7a745aD0'; // etherscan mock address
-const mockAddress2 = '0x3436100674492BCe353C6709ec11DEd32b1A797a'; // klaytnscope mock address
+const mockAddress = '0x1938A448d105D26c40A52a1Bfe99B8Ca7a745aD0'; 
+const mockAddress2 = '0x3436100674492BCe353C6709ec11DEd32b1A797a'; 
+const mockAddress3 = '0xbEF22A7b62bdAc0faE9bB7584c26b5eebC58C5Ee';
+
+const mockData = [{
+  symbol: "담보",
+  price: 10,
+},
+{
+  symbol: "부채",
+  price: 8,
+},
+{
+  symbol: "대출가능금액",
+  price: 6,
+},
+{
+  symbol: "청산 위험도",
+  price: 4,
+}
+]
 
 export default function DashboardApp() {
   const [amount, setAmount] = useState("");
   const [tokenBalances, setTokenBalances] = useState([]);
   const [slicedToken, setSlicedToken] = useState([]);
+  const [etherPrice, setEtherPrice] = useState();
 
   useEffect(() => {
     getBalances();
@@ -62,6 +82,12 @@ export default function DashboardApp() {
           method: 'get',
           url: `https://api.covalenthq.com/v1/pricing/historical/USD/${token.contract_ticker_symbol}/?quote-currency=USD&format=JSON&key=ckey_2e63764c1c1047eb852e6342bc4`
         })
+        const response3 = await axios({ //for ethereum price
+          method: 'get',
+          url: `https://api.covalenthq.com/v1/pricing/historical/USD/WETH/?quote-currency=USD&format=JSON&key=ckey_2e63764c1c1047eb852e6342bc4`
+        })
+        setEtherPrice(response3.data.data.prices[0].price)
+
         const bal = response1.data.data[0].prices[0].price < response2.data.data.prices[0].price ? response1.data.data[0].prices[0].price : response2.data.data.prices[0].price;
         result.symbol = token.contract_ticker_symbol;
         console.log(result.symbol,": ", bal);
@@ -78,7 +104,7 @@ export default function DashboardApp() {
   const getBalances = async () => {
     const balance = await axios({
       method: 'get',
-      url: `https://api.covalenthq.com/v1/1/address/${mockAddress}/balances_v2/?quote-currency=USD&format=JSON&nft=false&no-nft-fetch=false&key=ckey_2e63764c1c1047eb852e6342bc4`,
+      url: `https://api.covalenthq.com/v1/1/address/${mockAddress2}/balances_v2/?quote-currency=USD&format=JSON&nft=false&no-nft-fetch=false&key=ckey_2e63764c1c1047eb852e6342bc4`,
     });
 
     const promises = []; 
@@ -113,19 +139,19 @@ export default function DashboardApp() {
     setAmount(Math.floor(currentTotalPrice));
   };
 
-  const getCoinchartHours = () => {
-    const today = new Date();
-    const hours = today.getHours();
-    const arr = [];
-    for (let i = hours - 10; i <= hours; i += 1) {
-      let j = i;
-      if (j < 1) {
-        j = 24 - j;
-      }
-      arr.push(j);
-    }
-    return arr;
-  };
+  // const getCoinchartHours = () => {
+  //   const today = new Date();
+  //   const hours = today.getHours();
+  //   const arr = [];
+  //   for (let i = hours - 10; i <= hours; i += 1) {
+  //     let j = i;
+  //     if (j < 1) {
+  //       j = 24 - j;
+  //     }
+  //     arr.push(j);
+  //   }
+  //   return arr;
+  // };
 
   const theme = useTheme();
 
@@ -140,7 +166,7 @@ export default function DashboardApp() {
             <AppAmount title="보유 잔액" amount={amount} />
           </Grid>
 
-          <Grid item xs={12} md={6} lg={8}>
+          {/* <Grid item xs={12} md={6} lg={8}>
             <AppWebsiteVisits
               title="코인 대출가격 추이"
               subheader="(+31%) than last year"
@@ -166,7 +192,17 @@ export default function DashboardApp() {
                 },
               ]}
             />
+          </Grid> */}
+
+          <Grid item xs={12} md={6} lg={8}>
+            <AppConversionRates
+              title="대출현황"
+              subheader="단위 $"
+              chartData={mockData}
+              color="f00"
+            />
           </Grid>
+
           <Grid item xs={12} md={6} lg={4}>
             <AppCurrentVisits
               title="코인 보유량"
