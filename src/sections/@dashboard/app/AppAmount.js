@@ -7,7 +7,7 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import CreditScoreIcon from '@mui/icons-material/CreditScore';
 import { useEffect, useState } from 'react';
 
-export default function AppAmount({title,subheader,amount,...other}) {
+export default function AppAmount({title,subheader,amount, loanAmount, ...other}) {
     return(
         <Card {...other}>
             <CardHeader title={title} subheader={subheader} />
@@ -24,7 +24,7 @@ export default function AppAmount({title,subheader,amount,...other}) {
                     <ListItemIcon>
                     <CreditScoreIcon sx={{width: '3.5rem', height: '3.5rem'}}/>
                     </ListItemIcon>
-                    <ListItemText sx={{ml:2}} primaryTypographyProps={{fontWeight: '300'}} primary="대출액" secondary='$ 0'/>
+                    <ListItemText sx={{ml:2}} primaryTypographyProps={{fontWeight: '300'}} primary="대출액" secondary={`$ ${loanAmount.toLocaleString('en-US')}`}/>
                 </ListItem>
             </List>
         </Card>

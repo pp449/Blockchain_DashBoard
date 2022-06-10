@@ -34,30 +34,14 @@ import { ReactComponent as KXRP } from '../coin_icon/KXRP.svg';
 // ----------------------------------------------------------------------
 
 const mockAddress = '0x1938A448d105D26c40A52a1Bfe99B8Ca7a745aD0'; 
-const mockAddress2 = '0x3436100674492BCe353C6709ec11DEd32b1A797a'; 
+const mockAddress2 = '0x191915D2370693ECa0bc7BB0d14bAA3A12E8e96B'; 
 const mockAddress3 = '0xbEF22A7b62bdAc0faE9bB7584c26b5eebC58C5Ee';
-
-const mockData = [{
-  symbol: "담보",
-  price: 10,
-},
-{
-  symbol: "부채",
-  price: 8,
-},
-{
-  symbol: "대출가능금액",
-  price: 6,
-},
-{
-  symbol: "청산 위험도",
-  price: 4,
-}
-]
 
 export default function DashboardApp() {
   const [amount, setAmount] = useState("");
+  const [loanAmount, setLoanAmount] = useState(0);
   const [tokenBalances, setTokenBalances] = useState([]);
+  const [loanData, setLoanData] = useState([]);
   const [slicedToken, setSlicedToken] = useState([]);
   const [etherPrice, setEtherPrice] = useState();
 
@@ -76,16 +60,17 @@ export default function DashboardApp() {
       try {
         const response1 = await axios({
           method: 'get',
-          url: `https://api.covalenthq.com/v1/pricing/historical_by_addresses_v2/1/USD/${token.contract_address}/?&key=ckey_2e63764c1c1047eb852e6342bc4`
+          url: `https://api.covalenthq.com/v1/pricing/historical_by_addresses_v2/1/USD/${token.contract_address}/?&key=ckey_e858c1b66f7047a18daf240e3de`
         });
         const response2 = await axios({
           method: 'get',
-          url: `https://api.covalenthq.com/v1/pricing/historical/USD/${token.contract_ticker_symbol}/?quote-currency=USD&format=JSON&key=ckey_2e63764c1c1047eb852e6342bc4`
+          url: `https://api.covalenthq.com/v1/pricing/historical/USD/${token.contract_ticker_symbol}/?quote-currency=USD&format=JSON&key=ckey_e858c1b66f7047a18daf240e3de`
         })
         const response3 = await axios({ //for ethereum price
           method: 'get',
-          url: `https://api.covalenthq.com/v1/pricing/historical/USD/WETH/?quote-currency=USD&format=JSON&key=ckey_2e63764c1c1047eb852e6342bc4`
+          url: `https://api.covalenthq.com/v1/pricing/historical/USD/WETH/?quote-currency=USD&format=JSON&key=ckey_e858c1b66f7047a18daf240e3de`
         })
+        
         setEtherPrice(response3.data.data.prices[0].price)
 
         const bal = response1.data.data[0].prices[0].price < response2.data.data.prices[0].price ? response1.data.data[0].prices[0].price : response2.data.data.prices[0].price;
@@ -102,15 +87,39 @@ export default function DashboardApp() {
   };
 
   const getBalances = async () => {
+    const health = await axios.post(`https://wkzkh0240l.execute-api.ap-northeast-2.amazonaws.com/dev/userHealth`, {
+            address: mockAddress2,
+    })
+    console.log("health", health.data);
+    const mockData = [{
+      symbol: "담보",
+      price: health.data.deciCollarteral,
+    },
+    {
+      symbol: "부채",
+      price: health.data.deciDept,
+    },
+    {
+      symbol: "대출가능금액",
+      price: health.data.deciBorrowAvailable,
+    },
+    {
+      symbol: "청산 위험도",
+      price: health.data.deciHealthFactor,
+    }
+    ];
+    console.log(mockData);
+    setLoanData(mockData);
+    setLoanAmount(mockData[1].price);
+
     const balance = await axios({
       method: 'get',
-      url: `https://api.covalenthq.com/v1/1/address/${mockAddress2}/balances_v2/?quote-currency=USD&format=JSON&nft=false&no-nft-fetch=false&key=ckey_2e63764c1c1047eb852e6342bc4`,
+      url: `https://api.covalenthq.com/v1/1/address/${mockAddress2}/balances_v2/?quote-currency=USD&format=JSON&nft=false&no-nft-fetch=false&key=ckey_e858c1b66f7047a18daf240e3de`,
     });
-
+    console.log(balance);
     const promises = []; 
 
     const items = balance.data.data.items;
-
 
     for(let index = 0; index < items.length; index += 1) {
       promises.push(getTokenInfo(items[index]));
@@ -124,14 +133,13 @@ export default function DashboardApp() {
         tokens.push(results[index]);
       }
     }
-
     tokens.sort((a, b) => b.balance - a.balance);
     setSlicedToken(tokens.slice(0,4));
 
     tokens.sort((a,b) => b.price - a.price);
     setTokenBalances(tokens);
 
-    let currentTotalPrice = 0;
+    let currentTotalPrice = mockData[0].price + mockData[1].price;
 
     tokens.forEach(result => {
       currentTotalPrice += result.price;
@@ -148,14 +156,14 @@ export default function DashboardApp() {
         </Typography>
         <Grid container spacing={3}>
           <Grid item xs={12} md={6} lg={4}>
-            <AppAmount title="보유 잔액" amount={amount} />
+            <AppAmount title="보유 잔액" amount={amount} loanAmount={loanAmount}/>
           </Grid>
 
           <Grid item xs={12} md={6} lg={8}>
             <AppConversionRates
               title="대출현황"
               subheader="단위 $"
-              chartData={mockData}
+              chartData={loanData}
               color="f00"
             />
           </Grid>
