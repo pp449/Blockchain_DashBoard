@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useTheme } from '@mui/material/styles';
 import { Grid, Container, Typography } from '@mui/material';
 // components
+import { useWeb3Context } from '../hooks';
 import Page from '../components/Page';
 import Iconify from '../components/Iconify';
 // sections
@@ -33,12 +34,13 @@ import { ReactComponent as KXRP } from '../coin_icon/KXRP.svg';
 
 // ----------------------------------------------------------------------
 
-const mockAddress = '0x1938A448d105D26c40A52a1Bfe99B8Ca7a745aD0'; 
+const mockAddress1 = '0x1938A448d105D26c40A52a1Bfe99B8Ca7a745aD0'; 
 const mockAddress2 = '0x191915D2370693ECa0bc7BB0d14bAA3A12E8e96B'; 
 const mockAddress3 = '0xbEF22A7b62bdAc0faE9bB7584c26b5eebC58C5Ee';
 
 export default function DashboardApp() {
-  const [amount, setAmount] = useState("");
+  const { connect,disconnect,hasCachedProvider, provider, connected, address, web3Modal, providerChainID } = useWeb3Context();
+  const [amount, setAmount] = useState(0);
   const [loanAmount, setLoanAmount] = useState(0);
   const [tokenBalances, setTokenBalances] = useState([]);
   const [loanData, setLoanData] = useState([]);
@@ -46,6 +48,9 @@ export default function DashboardApp() {
   const [etherPrice, setEtherPrice] = useState();
 
   useEffect(() => {
+    if (hasCachedProvider()) {
+      connect();
+    }
     getBalances();
   }, []);
 
@@ -75,48 +80,49 @@ export default function DashboardApp() {
 
         const bal = response1.data.data[0].prices[0].price < response2.data.data.prices[0].price ? response1.data.data[0].prices[0].price : response2.data.data.prices[0].price;
         result.symbol = token.contract_ticker_symbol;
-        console.log(result.symbol,": ", bal);
         result.balance = token.balance / 10 ** token.contract_decimals;
         result.price = result.balance * bal;
         // result.price = result.balance * response.data.data.prices[0].price;
       } catch(e) {
-        console.log("scam");
       }
     }    
     return result;
   };
 
   const getBalances = async () => {
+    console.log("address: ", address);
+    let currentTotalPrice = 0;
+
     const health = await axios.post(`https://wkzkh0240l.execute-api.ap-northeast-2.amazonaws.com/dev/userHealth`, {
-            address: mockAddress2,
+            address: address,
     })
-    console.log("health", health.data);
-    const mockData = [{
-      symbol: "담보",
-      price: health.data.deciCollarteral,
-    },
-    {
-      symbol: "부채",
-      price: health.data.deciDept,
-    },
-    {
-      symbol: "대출가능금액",
-      price: health.data.deciBorrowAvailable,
-    },
-    {
-      symbol: "청산 위험도",
-      price: health.data.deciHealthFactor,
+    if(health.data.deciCollarteral > 0){
+      const mockData = [{
+        symbol: "담보",
+        price: health.data.deciCollarteral,
+      },
+      {
+        symbol: "부채",
+        price: health.data.deciDept,
+      },
+      {
+        symbol: "대출가능금액",
+        price: health.data.deciBorrowAvailable,
+      },
+      {
+        symbol: "청산 위험도",
+        price: health.data.deciHealthFactor,
+      }
+      ];
+      setLoanData(mockData);
+      setLoanAmount(mockData[1].price);
+      currentTotalPrice += mockData[0].price + mockData[1].price;
     }
-    ];
-    console.log(mockData);
-    setLoanData(mockData);
-    setLoanAmount(mockData[1].price);
 
     const balance = await axios({
       method: 'get',
-      url: `https://api.covalenthq.com/v1/1/address/${mockAddress2}/balances_v2/?quote-currency=USD&format=JSON&nft=false&no-nft-fetch=false&key=ckey_e858c1b66f7047a18daf240e3de`,
+      url: `https://api.covalenthq.com/v1/1/address/${address}/balances_v2/?quote-currency=USD&format=JSON&nft=false&no-nft-fetch=false&key=ckey_e858c1b66f7047a18daf240e3de`,
     });
-    console.log(balance);
     const promises = []; 
 
     const items = balance.data.data.items;
@@ -139,7 +145,6 @@ export default function DashboardApp() {
     tokens.sort((a,b) => b.price - a.price);
     setTokenBalances(tokens);
 
-    let currentTotalPrice = mockData[0].price + mockData[1].price;
 
     tokens.forEach(result => {
       currentTotalPrice += result.price;
