@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 // material
 import { styled } from '@mui/material/styles';
-import { Box, Link, Button, Drawer, Typography, Avatar, Stack, SvgIcon, TextField, MenuItem } from '@mui/material';
+import { Box, Link, Button, Drawer, Typography, Avatar, Stack, SvgIcon, MenuItem } from '@mui/material';
 // mock
 // hooks
 import useResponsive from '../../hooks/useResponsive';
@@ -17,6 +17,7 @@ import { ReactComponent as metamaskIcon } from '../../coin_icon/METAMASK.svg';
 import { useWeb3Context } from '../../hooks';
 import MenuPopover from "../../components/MenuPopover";
 import account from "../../_mock/account";
+import errorModal from "../../modal/errorModal";
 
 // ----------------------------------------------------------------------
 
@@ -107,7 +108,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
             <Box sx={{ ml: 2 }}>
               <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
                 {account.displayName ? account.displayName : 
-                <Button variant="text">계정가입을 해주세요</Button>
+                <RouterLink to="/login" variant="text">계정가입을 해주세요</RouterLink>
                 }
               </Typography>
             </Box>
@@ -145,7 +146,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
           <MenuItem key="account" >
             지갑 주소
           </MenuItem>
-          <MenuItem key="disconnect" >
+          <MenuItem key="disconnect" onClick={disconnect}>
             연결 끊기
           </MenuItem>
         </Stack>

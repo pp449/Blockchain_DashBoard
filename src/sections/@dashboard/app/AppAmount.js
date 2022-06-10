@@ -7,8 +7,6 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import CreditScoreIcon from '@mui/icons-material/CreditScore';
 import { useEffect, useState } from 'react';
 
-const dollar = "$ ";
-
 export default function AppAmount({title,subheader,amount,...other}) {
     return(
         <Card {...other}>

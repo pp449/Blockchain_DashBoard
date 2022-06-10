@@ -138,21 +138,6 @@ export default function DashboardApp() {
     })
     setAmount(Math.floor(currentTotalPrice));
   };
-
-  // const getCoinchartHours = () => {
-  //   const today = new Date();
-  //   const hours = today.getHours();
-  //   const arr = [];
-  //   for (let i = hours - 10; i <= hours; i += 1) {
-  //     let j = i;
-  //     if (j < 1) {
-  //       j = 24 - j;
-  //     }
-  //     arr.push(j);
-  //   }
-  //   return arr;
-  // };
-
   const theme = useTheme();
 
   return (
@@ -165,34 +150,6 @@ export default function DashboardApp() {
           <Grid item xs={12} md={6} lg={4}>
             <AppAmount title="보유 잔액" amount={amount} />
           </Grid>
-
-          {/* <Grid item xs={12} md={6} lg={8}>
-            <AppWebsiteVisits
-              title="코인 대출가격 추이"
-              subheader="(+31%) than last year"
-              chartLabels={getCoinchartHours()}
-              chartData={[
-                {
-                  name: 'DAI',
-                  type: 'column',
-                  fill: 'solid',
-                  data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30],
-                },
-                {
-                  name: 'XRP',
-                  type: 'area',
-                  fill: 'gradient',
-                  data: [44, 55, 41, 67, 22, 43, 21, 41, 56, 27, 43],
-                },
-                {
-                  name: 'AVAX',
-                  type: 'line',
-                  fill: 'solid',
-                  data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39],
-                },
-              ]}
-            />
-          </Grid> */}
 
           <Grid item xs={12} md={6} lg={8}>
             <AppConversionRates
