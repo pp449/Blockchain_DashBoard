@@ -1,17 +1,9 @@
-> Free React Admin Dashboard made with Material-UI components and React.
+# 소개
+크롬 Extension중 많이 쓰이는 Metamask와 연동하여 해당 주소에 가지고있는 코인들을 보여주는 대시보드이다
+<br /><br />
 
-![preview](public/static/preview.jpg)
+# 스크린샷
+<img width="1839" alt="Screen Shot 2022-08-11 at 1 57 03 PM" src="https://user-images.githubusercontent.com/71641127/184070603-48f6a2b7-296d-4a4d-88fc-ce0e4bd3cef0.png">
 
-| [Minimal Free](https://minimal-kit-react.vercel.app/) | [Minimal](https://material-ui.com/store/items/minimal-dashboard/) |
-| ----------------------------------------------------- | :---------------------------------------------------------------- |
-| **7** Demo pages                                      | **42+** demo pages                                                |
-| -                                                     | ✓ Multi-language                                                  |
-| -                                                     | ✓ Dark/Light Mode 🌓                                              |
-| -                                                     | ✓ [More components](https://minimals.cc/components)               |
-| -                                                     | ✓ TypeScript version                                              |
-| -                                                     | ✓ Design files (Figma & Sketch)                                   |
-## Getting started
-
-- Recommended `node js 14.x` and `npm 6+`
-- Install dependencies: `npm install` or `yarn install`
-- Start the project: `npm run start` or `yarn start`
+# 코인 잔액 불러오기위해 사용한 API
+https://www.covalenthq.com/docs/api/#/0/Get%20token%20balances%20for%20address/USD/8217
